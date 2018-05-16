@@ -1,0 +1,168 @@
+
+# --------------------------------------------------------------- DATE PRODUCER
+
+cat<<END> date.inf
+base_files\date.par                        -input file
+END
+
+# --------------------------------------------------------------- FLAC INITIAL FILE
+
+
+cat<<END> flac.tmp
+call run_NNNN_MMMM.flc 
+END
+
+# --------------------------------------------------------------- K_E (STATIC) EXTRACTOR FROM ALL DATA
+
+
+cat<<END> K_E.tmp
+
+START
+all_data\all_NNNN.dat  	   - Input file         		   
+100                       - Number of realizations
+100,20			   - Number of blocks in x,z direction
+0.3		           - Poisson's Ratio
+1			   - Perm multiplier
+1e6			   - Elastisity multiplier
+NNNN			   - Iteration code
+D		           - STARS K direction Up/Down		
+10,5			   - Reference cell in FLAC i,j
+
+END
+
+
+# ------------------------------------------------------ EXTRACT TEMP and PRESSURE and Translate it for FLAC 
+
+
+cat<<END> rep1.tmp
+
+*FILE           'run_NNNN_MMMM.irf'
+*OUTPUT         'tp_stars_out/temp_NNNN_MMMM.inc'
+*PROPERTY-FOR   'Temperature' TIME  *XYZLAYER  0
+
+*FILE           'run_NNNN_MMMM.irf'
+*OUTPUT         'tp_stars_out/pres_NNNN_MMMM.inc'
+*PROPERTY-FOR   'PRES'  TIME  *XYZLAYER  0
+
+
+END
+
+
+cat<<END> info_temp.tmp
+
+START
+tp_stars_out\temp_NNNN_MMMM.inc	    - Name of the input file
+tp_flac_in\temp_NNNN_MMMM.flc	   - Name of the output file
+100,1,20                      - Number of Blocks in i,j,k direction
+11,6                          - (i,j) position of reservoir grid block in FLAC
+D                             - k vector direction: U (for up) or D (for Down)
+T                             - Variable (T: temprature, P: pressure, S: saturation)
+1                            - Which vertical slice to remove from a 3D model (j=?)
+10  			            - boundary values
+1  				   - Multiplier
+
+
+END
+
+
+
+
+cat<<END> info_pres.tmp
+
+START
+tp_stars_out\pres_NNNN_MMMM.inc	   - Name of the input file
+tp_flac_in\pres_NNNN_MMMM.flc	   - Name of the output file
+100,1,20                  	 - Number of Blocks in i,j,k direction
+11,6                       - (i,j) position of reservoir grid block in FLAC
+D                          - k vector direction: U (for up) or D (for Down)
+P                          - Variable (T: temprature, P: pressure, S: saturation)
+1                          - Which vertical slice to remove from a 3D model (j=?)
+550e3                     - boundary values
+1000		          - Multiplier
+
+
+END
+
+
+# --------------------------------------------------------------- UPDATES K Based on Volumetric Strain
+
+
+cat<<END> guide.tmp
+
+START
+vol_strain\ev_NNNN_MMMM.out	           - Name of the input file for Volumetric Strain (FLAC)
+K_Static\K_Stat_NNNN_MMMM.inc		   - Name of the input file for initial Perm  (inc file)
+K_Dyn\K_Dyn_NNNN_MMMM.inc		   - Name of Perm output file
+100,20   	  		 	   - Number of Blocks in i,k direction (STARS) i,j (FLAC)
+D            		      	 	   - k vector direction: U (for up) or D (for Down)
+-0.02                            	   - lower band for volumetric strain
+0.12                             	   - upper bad for volumetric strain
+0.32				 	   - Porosity
+
+
+END
+
+
+
+cat<<END> rep_pro.tmp
+
+*OUTPUT   'OBS_out/pro_NNNN_MMMM.pro'
+*LINES-PER-PAGE  10000
+ 
+*TABLE-FOR
+
+  *COLUMN-FOR
+
+    *FILES 'run_NNNN_MMMM.irf'
+
+    *WELLS 
+    'Producer2' 
+    
+    *PARAMETERS 'Oil Rate SC'
+ 
+    
+*TABLE-END 
+
+END
+
+
+cat<<END> extract_pro.tmp
+OBS_out\pro_NNNN_MMMM.pro 	   - input file
+OBS\pro_NNNN_MMMM.out	  	   - output file
+2                                  - Number of columns including time
+END
+
+
+# --------------------------------------------------------------- GETS THE REPORT of Injection
+
+
+cat<<END> rep_inj.tmp
+
+*OUTPUT   'OBS_out/inj_NNNN_MMMM.inj'
+*LINES-PER-PAGE  10000
+ 
+*TABLE-FOR
+
+  *COLUMN-FOR
+
+    *FILES 'run_NNNN_MMMM.irf'
+
+    *WELLS   'Injector2'   *PARAMETERS 'Water Rate SC'
+    
+    *SECTORS *ALL *PARAMETERS 'Steam Oil Ratio Cum SCTR'
+ 
+    
+*TABLE-END 
+
+END
+
+
+cat<<END> extract_inj.tmp
+OBS_out\inj_NNNN_MMMM.inj 	   - input file
+OBS\inj_NNNN_MMMM.out	  	   - output file
+3                                  - Number of columns including time
+END
+
+
+
+

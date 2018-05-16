@@ -1,0 +1,149 @@
+; SAGD Modeling
+
+
+config ats thermal
+grid 120,35                             
+
+; ----------------- Settings --------------------------
+
+set grav = 9.81
+set echo off
+
+; ----------------- Call Fish Functions ----------------
+
+call fish\functions.fis
+
+
+; -------------------- Define Grid --------------------
+
+
+; depth = 0 to 140      --- overburden       (140 m) 
+
+gen 0,70 0,210 150,210 150,70 ratio 0.8,1.5 i=1,11 j=26,36
+gen 150,70 150,210 250,210 250,70 ratio 1,1.5 i=11,111 j=26,36
+gen 250,70 250,210 400,210 400,70 ratio 1.25,1.5 i=111,121 j=26,36
+
+
+; depth = 140 to 160    --- reservoir        (20 m)    
+
+gen 0,50 0,70 150,70 150,50 ratio 0.8,1 i=1,11 j=6,26
+gen 150,50 150,70 250,70 250,50 i=11,111 j=6,26
+gen 250,50 250,70 400,70 400,50 ratio 1.25,1 i=111,121 j=6,26
+
+
+; depth = 160 to 210    --- bottom of grid   (50 m)
+
+gen 0,0 0,50 150,50 150,0 ratio 0.8,0.6499999 i=1,11 j=1,6
+gen 150,0 150,50 250,50 250,0 ratio 1,0.6499999 i=11,111 j=1,6
+gen 250,0 250,50 400,50 400,0 ratio 1.25,0.6499999 i=111,121 j=1,6
+
+ 
+; -------------------- Define Elastic Properties -------
+
+
+group 'over'  j=26,35 
+model elastic th_i group 'over' 
+prop d=2200  b=667e6   s=308e6   group 'over'
+prop cond=1 spec=1 thexp=2.00E-05  group 'over'
+
+group 'reservoir'  j=6,25
+model elastic th_i group 'reservoir' 
+prop d=2200  b=555e6   s=256.154e6   group 'reservoir'
+prop cond=1 spec=1 thexp=2.00E-05 group 'reservoir'
+
+
+call E_Static\E_Stat_0_7.inc
+
+
+group 'under'  j=1,5
+model elastic th_i group 'under' 
+prop d=2200  b=4.167e9   s=1.923e9   group 'under'
+prop cond=1 spec=1 thexp=2.00E-05  group 'under'
+
+
+
+; -------------------- Fluid Properties ------------------------
+
+water den 1000 bulk 2e9
+
+; -------------------- Define Initial Stresses -----------------
+
+
+; --------- Stress along x,y,z
+
+ini sxx  -4620000 var 0,4620000    j=1,36
+ini syy  -4620000 var 0,4620000    j=1,36
+ini szz  -9240000 var 0,9240000    j=1,36
+
+; --------- Pore Pressure
+
+ini pp  0     			j=34,36
+ini pp  1100e3 var 0,-1100e3	j=1,34
+ini pp  550e3			j=6,26
+
+; --------- Shear Stress 
+
+ini sxy  0
+
+; --------- Temprature
+
+ini temp 10
+
+; -------------------- Define Boundary Condition -----------------
+
+fix x y		j=1                               
+fix x		i=1
+fix x		i=121
+
+; -------------------- solve and initialize ----------------------
+
+set mech on thermal off flow off     ; Mechanical only calculation
+water bulk=0	                     ; Prevent mechanical generation of pore pressure
+solve 
+ini xdis 0
+ini ydis 0
+ini xvel 0
+ini yvel 0
+
+; -------------------- Produce Output Files ----------------------
+
+
+SET _fil_name 'vol_strain\ev_0_7.out'
+ev_out
+
+SET _file_disp_y_top   'MNT_Y_Top\delh_0_7.out'
+SET _file_disp_y_bot   'MNT_Y_Bot\delh_0_7.out'
+SET _file_disp_x_ctr   'MNT_X_Ctr\delh_0_7.out'
+SET _file_disp_x_right 'MNT_X_Right\delh_0_7.out'
+;
+_disp_y_bot
+_disp_y_top
+_disp_x_ctr
+_disp_x_right
+
+
+; -------------------- Save For the Next Step --------------------
+
+save run_0_7.sav
+quit
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

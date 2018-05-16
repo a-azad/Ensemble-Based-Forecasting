@@ -1,0 +1,408 @@
+RESULTS SIMULATOR STARS 200900
+
+
+
+
+**NOLIST
+**
+INUNIT *SI
+*****************************************************************
+**CHECKONLY
+**
+INTERRUPT STOP
+**
+WPRN GRID TIME
+WPRN ITER TIME
+OUTPRN WELL ALL
+**PRES SWCRIT SW SO SG TEMP OBHLOSS VISO KRO KRG KRW MASDENO MASDENG MASDENW 
+OUTPRN GRID NONE
+**ALL    **SMALL
+OUTPRN RES NONE
+OUTPRN ITER BRIEF
+**
+WSRF GRID TIME
+WSRF WELL TIME
+WSRF SECTOR TIME
+OUTSRF GRID PRES SG SO SW TEMP 
+**OUTSRF WELL COMPONENT ALL
+OUTSRF WELL LAYER ALL
+REWIND 0
+
+
+**$  Distance units: m 
+RESULTS XOFFSET           0.0000
+RESULTS YOFFSET           0.0000
+RESULTS ROTATION           0.0000  **$  (DEGREES)
+RESULTS AXES-DIRECTIONS 1.0 -1.0 1.0
+WRST TIME
+
+
+
+**$ ***************************************************************************
+**$ Definition of fundamental cartesian grid
+**$ ***************************************************************************
+
+GRID VARI 100 1 20
+KDIR DOWN
+DI IVAR 
+ 100*1
+DJ JVAR 
+ 1
+DK ALL
+ 2000*1
+DTOP
+ 100*0
+
+NULL CON            1
+PINCHOUTARRAY CON            1
+
+
+**$ Property: Porosity  Max: 0.3  Min: 0.3
+POR CON          0.32
+
+
+
+**$ Property: Permeability I (md)   Max: 4000  Min: 2000
+PERMI CON         1000
+
+*mod
+INCLUDE 'K_Dyn/K_Dyn_0_1.inc'
+
+
+
+
+**$ Property: Permeability J (md)   Max: 2000  Min: 2000
+PERMJ CON         1000
+
+*mod
+INCLUDE 'K_Dyn/K_Dyn_0_1.inc'
+
+
+
+**$ Property: Permeability K (md)   Max: 2000  Min: 2000
+PERMK CON         1000
+*mod
+INCLUDE 'K_Dyn/K_Dyn_0_1.inc'
+
+
+
+
+END-GRID
+
+
+
+
+
+
+
+
+*****************************************************************************
+** GRID OTHER PROPERTIES
+*****************************************************************************
+ROCKTYPE 1               
+
+   CPOR   1.2E-6   
+   PRPOR  101. 
+   CTPOR 3.84e-5
+   ROCKCP 2.347E6 0. ** J/(m3 C)  = 35 Btu/(ft3 F) 
+*************************** 
+   THCONR 600E3 ** J/(m d C)  
+   THCONW  55E3 
+   THCONO  11E3 
+   THCONG   2E3 
+
+   THCONMIX SIMPLE    
+***************************
+   HLOSSPROP OVERBUR  2.347E6 1.496E5  ** Vol. Heat Capacity / Thermal conductivity
+             UNDERBUR 2.347E6 1.496E5
+
+
+
+*********** Property: Thermal/rock Set Num  Max: 1  Min: 1
+THTYPE CON            1
+
+
+
+*****************************************************************************
+** COMPONENT PROPERTIES
+*****************************************************************************
+MODEL 3 3 3 1   **Fluids of the model include water, dead oil and methane
+
+
+COMPNAME 'WATER'   'OIL'  'METHANE' 
+**--------------------------------
+CMM       0.018    0.523    0.016  ** kg/gmol = kg/mol (!)
+PCRIT     0.0      0.0      4600   ** kPa. Default for water, not needed for dead oil
+TCRIT     0.0      0.0     -82.55  ** oC.  Default for water, not needed for dead oil
+
+MOLDEN  55555     1931    20000    ** Molar density = Dens/MW. 
+                                   ** For water =1000/0.018= 55555
+                                   ** For oil = 1010/0.523 =  1931
+                                   ** For gas =  320/0.016 = 20000
+
+CP      4.463E-7  6E-7   10E-7  ** 1/kPa. 
+
+CT1       0.0     10.04E-4 9.72E-4 ** 1/oC. Thermal expansion coefficients 
+CT2       0.0      0.0     0.0
+
+CPG1      0.0      841.     35.2    ** Refer to both ARC and CMG decks
+CPL1      0.0     1000.     67.2  
+HVAPR     0.0     1346.   1770.     ** Heat of vaporization, J/(gmol oC)
+
+AVG       0.0      0.0     0.016    
+BVG       0.0      0.0     0.0      ** Temperature-independent
+
+**    K-VALUE CORRELATIONS (From STARS' Table)
+KV1       0.0      0.0     5.45E5 **kPa. 
+KV4       0.0      0.0  -879.84     **oC
+KV5       0.0      0.0  -265.99     **oC
+
+PRSR  500.     **kPa. Ref. pressure of methane & others density = Initial gas cap res. pressure
+TEMR  10.        
+
+PSURF 101.3    **=14.7 psia **Surface conditions 
+TSURF 15.6     **=60 oF
+
+
+VISCTABLE
+************************************************** Both curves smoothed by Jeff
+**Temp       Water           Bitumen    Methane (liq)
+**********************************************************************************
+  9.0          0        1461700       515.59
+  10.0         0        1241639       486.21
+  12.2         0         870699       427.72
+  40.0         0         22267.1      107.86
+  60.0         0          3183.8       49.21
+  80.0         0           694.3       25.58
+ 100.0         0           209.2       14.74
+ 120.0         0            81.1        9.23
+ 140.0         0            38.2        6.17
+ 160.0         0            21.1        4.37
+ 175.6         0            14.5        3.44
+ 200.0         0             9.1        2.48
+ 220.0         0             6.8        1.97
+ 240.0         0             5.4        1.6
+ 260.0         0             4.5        1.34
+ 280.0         0             4.0        1.13
+ 300.0         0             3.6        0.98
+ 350.0         0             3.2        0.80
+
+*****************************************************************************
+** ROCK-FLUID DATA
+*****************************************************************************
+ROCKFLUID
+RPT 1
+
+SWT        
+****************** Additional points were added between (1-Sor) and 1
+**   Sw         Krw         Krow
+*************************************
+  0.15        0.0000      1.0000
+  0.20        0.0001      0.8603
+  0.25        0.0009      0.7305
+  0.30        0.0028      0.6106
+  0.35        0.0066      0.5009
+  0.40        0.0125      0.4014
+  0.45        0.0212      0.3123
+  0.50        0.0332      0.2337
+  0.55        0.0489      0.1659
+  0.60        0.0688      0.1091
+  0.65        0.0935      0.0635
+  0.70        0.1232      0.0296
+  0.75        0.1586      0.0080
+  0.80        0.2000      0.0000
+  0.85        0.2960      0.0000
+  0.90        0.4540      0.0000
+  0.95        0.6780      0.0000
+  1.00        1.0000      0.0000
+
+
+SLT       
+******************* Additional points were added between Swc and (Swc+Sor)
+**Sliq         Krg           Krog          Krw
+*************************************************
+0.1500        1.0000        0.0000        0.0000
+0.1925        0.8330        0.0000        0.0000
+0.2775        0.6000        0.0000        0.0000
+0.3625        0.4500        0.0000        0.0000
+0.4050        0.3851        0.0081        0.0000
+0.4475        0.3256        0.0277        0.0000
+0.4900        0.2712        0.0570        0.0000
+0.5325        0.2220        0.0951        0.0000
+0.5750        0.1779        0.1415        0.0000
+0.6175        0.1389        0.1957        0.0000
+0.6600        0.1050        0.2575        0.0000
+0.7025        0.0759        0.3266        0.0000
+0.7450        0.0518        0.4028        0.0000
+0.7875        0.0324        0.4859        0.0000
+0.8300        0.0177        0.5758        0.0000
+0.8725        0.0076        0.6722        0.0000
+0.9150        0.0018        0.7751        0.0000
+0.9575        0.0000        0.8844        0.0000
+1.0000        0.0000        1.0000        0.0000
+
+SGR     0.05               **Critical gas saturation
+KRGCW   0.60               **Rel. perm. to gas at residual liquid saturation (Swc+Sor)
+
+
+************* Sand
+KRTEMTAB     SORW       SORG      KRWIRO
+   10        0.15       0.15       0.20
+  250        0.10       0.05       0.40
+
+
+*************  RELATIVE PERMEABILITY TYPE DESIGNATION 
+************* Property: Rel Perm Set Number  Max: 1  Min: 1
+KRTYPE CON            1
+
+
+************* Property: Critical Water Saturation  Max: 0.15  Min: 0.15
+BSWCRIT CON         0.15
+
+
+
+*****************************************************************************
+** INTITIALIZATION
+*****************************************************************************
+INITIAL
+
+VERTICAL DEPTH_AVE
+
+INITREGION 1
+
+REFPRES 550
+REFDEPTH 10
+
+
+**$ Property: Temperature (C)   Max: 10  Min: 10
+TEMP CON           10
+
+**$ Property: Water Saturation  Max: 0.15  Min: 0.15
+SW CON         0.2
+
+**$ Property: Oil Saturation  Max: 0.85  Min: 0.85
+SO CON         0.8
+
+**$ Property: Gas Saturation  Max: 0  Min: 0
+SG CON            0
+                                    ** Initial "OIL"     mol fraction in the oil liquid phase
+**$ Property: Oil Mole Fraction(OIL)  Max: 0.999  Min: 0.999
+MFRAC_OIL 'OIL' CON        0.999
+                                    ** Initial "METHANE" mol fraction in the oil liquid phase
+**$ Property: Oil Mole Fraction(METHANE)  Max: 0.001  Min: 0.001
+MFRAC_OIL 'METHANE' CON        0.001
+
+
+
+
+
+
+
+
+*****************************************************************************
+** NUMERICAL CONTROL
+*****************************************************************************
+NUMERICAL
+DTMAX 30.
+MAXSTEPS 9999999
+NORM TEMP 10
+UPSTREAM KLEVEL
+CONVERGE TOTRES LOOSE
+ITERMAX 300
+NORTH 100
+
+
+
+*****************************************************************************
+** WELL AND RECURRENT DATA
+*****************************************************************************
+NCUTS 20
+RUN
+DATE 1901 1  1.00000
+DTWELL 5
+
+
+
+
+
+**$
+WELL  'Injector2'  FRAC  1.
+INJECTOR MOBWEIGHT IMPLICIT 'Injector2'
+INCOMP  WATER  1.  0.  0.
+TINJW  250.
+QUAL  0.95
+OPERATE  MAX  BHP  3000.  CONT
+OPERATE  MAX  STW  800.  CONT
+**$          rad  geofac  wfrac  skin
+GEOMETRY  K  0.086  0.249  1.  0.
+PERF  GEOA  'Injector2'
+**$ UBA      ff  Status  Connection  
+    50 1 16  1.  OPEN    FLOW-FROM  'SURFACE'
+SHUTIN 'Injector2'
+
+
+
+
+
+**$
+WELL  'Producer2'  FRAC  1.
+PRODUCER 'Producer2'
+OPERATE  MIN  BHP  500.  CONT
+OPERATE  MAX  STL  800.  CONT
+OPERATE  MIN  STEAMTRAP  10.  CONT REPEAT
+**$          rad  geofac  wfrac  skin
+GEOMETRY  K  0.086  0.249  1.  0.
+PERF  GEOA  'Producer2'
+**$ UBA      ff  Status  Connection  
+    50 1 19  1.  OPEN    FLOW-TO  'SURFACE'
+SHUTIN 'Producer2'
+
+
+
+
+
+**$ Property: Heat Transfer Rate (J/day)   Max: 0  Min: 0
+HEATR CON            0
+*MOD
+
+   50:50        1:1        16:16    = 1e11
+   50:50        1:1        19:19    = 1e11
+   
+
+**$ Property: Temp. Setpoint for Controller (C)   Max: 10  Min: 10
+TMPSET CON           10
+ 
+*MOD
+ 
+      50:50        1:1        16:16    = 240
+      50:50        1:1        19:19    = 240
+
+ 
+**$ Property: Prop. Heat Transfer Coeff. (J/(day*C))   Max: 0  Min: 0
+UHTR CON            0
+ 
+*MOD
+
+      50:50        1:1        16:16    = 1e+10
+      50:50        1:1        19:19    = 1e+10
+
+
+AUTOHEATER ON  50:50        1:1        16:16 
+AUTOHEATER ON  50:50        1:1        19:19  
+
+
+
+
+
+*****************************************************************************
+** DATES
+*****************************************************************************
+
+
+DATE 1901 1  15
+STOP
+
+
+
+
+

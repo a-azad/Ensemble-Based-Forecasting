@@ -1,0 +1,67 @@
+; SAGD Modeling
+
+restore run_SSSS_MMMM.sav
+
+
+; ---- Define Plastic Properties for the reservoir ONLY -------
+
+model e th_i group 'reservoir' 
+prop cond=1 spec=1 thexp=2.00E-05  group 'reservoir'
+prop d=2200  b=555e6   s=256.154e6   group 'reservoir'
+
+set echo off
+call E_Static\E_Stat_NNNN_MMMM.inc
+
+
+; --------- Update Temprature and Pressure and material properties
+
+call tp_flac_in\temp_SSSS_MMMM.flc
+call tp_flac_in\pres_SSSS_MMMM.flc
+
+; -------------------- Run Fish Functions ------------------------
+
+
+set mech on thermal off flow off     ; Mechanical only calculation
+solve
+
+; -------------------- FISH Functions RUN ------------------------
+
+SET _fil_name 'vol_strain\ev_NNNN_MMMM.out'
+ev_out
+
+SET _file_disp_y_top   'OBS\delh_NNNN_MMMM.out'
+_disp_y_top
+;
+;SET _file_disp_y_bot   'OBS\delh_NNNN_MMMM.out'
+;_disp_y_bot
+;
+;SET _file_disp_x_ctr   'OBS\delh_NNNN_MMMM.out'
+;_disp_x_ctr
+;
+;SET _file_disp_x_right 'OBS\delh_NNNN_MMMM.out'
+;_disp_x_right
+; -------------------- Save For the Next Step --------------------
+
+save run_NNNN_MMMM.sav
+quit
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

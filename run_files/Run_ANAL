@@ -1,0 +1,116 @@
+
+cat<<END> prod-1.tmp
+
+*OUTPUT   'anal/pr/prod_NNNN.ot'
+*LINES-PER-PAGE  10000
+ 
+*TABLE-FOR
+
+  *COLUMN-FOR
+
+    *FILES 'run_PPPP_NNNN.irf'
+
+    *WELLS  'Producer2' 
+        
+    *PARAMETERS 'Oil Rate SC'
+ 
+    
+    *SECTORS *ALL *PARAMETERS 'Steam Oil Ratio Inst SCTR'  
+
+    
+*TABLE-END
+ 
+
+END
+
+
+
+
+################################################
+
+
+
+
+cat<<END> prod-2.tmp
+
+*OUTPUT   'anal/pr/prod_NNNN.ou'
+*LINES-PER-PAGE  10000
+ 
+*TABLE-FOR
+
+  *COLUMN-FOR
+
+    *FILES 'run_PPPP_NNNN.irf'
+
+    *WELLS  'Injector2'  *PARAMETERS 'Water Rate SC'
+    
+    *SECTORS *ALL *PARAMETERS 'Steam Oil Ratio Inst SCTR'
+  
+    
+        
+*TABLE-END
+ 
+
+END
+
+
+# ====================================================  LOOP RUN  =============================
+
+
+
+XP=20
+
+
+
+
+XI=1
+XJ=100
+
+
+while [ $XI -le $XJ ]
+do
+
+
+		
+	
+	
+	
+	# --------------------------------------- EXTRACT PRODUCTION DATA TO FILE
+	
+	
+	sed -e "s/NNNN/$XI/g"       prod-1.tmp  > prod2.tmp
+	sed -e "s/PPPP/$XP/g"       prod2.tmp > prod.inp
+	report.exe  -f prod.inp /o tmp.tmp
+	rm prod.inp
+	rm tmp.tmp
+	
+	
+	file_dst='anal/pr/prod_NNNN.ot'
+	file_dst1=${file_dst/NNNN/$XI}
+	file_dst2=${file_dst1/ot/pro}
+	sed '1,11d' $file_dst1	>  $file_dst2
+	rm anal/pr/*.ot
+	
+	
+	sed -e "s/NNNN/$XI/g"       prod-2.tmp > prod22.tmp
+	sed -e "s/PPPP/$XP/g"       prod22.tmp > prod33.inp
+	report.exe  -f prod33.inp /o tmp.tmp
+	rm prod33.inp
+	rm tmp.tmp
+		
+		
+	file_dst='anal/pr/prod_NNNN.ou'
+	file_dst1=${file_dst/NNNN/$XI}
+	file_dst2=${file_dst1/ou/inj}
+	sed '1,11d' $file_dst1	>  $file_dst2
+	rm anal/pr/*.ou	
+	
+	# --------------------------------------- 
+	 
+
+    
+XI=$((XI+1))
+    
+done
+
+rm *.tmp

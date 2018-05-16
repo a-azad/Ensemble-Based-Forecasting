@@ -1,0 +1,134 @@
+
+Bash ParFile
+
+# ====================================================  LOOP RUN  =============================
+
+
+
+	XI=`head -1 it_code/code.dat`
+	TM=$((XI*30))
+
+
+	sed -e "s/NNNN/$XI/g"  K_E.tmp > K_E.par
+	KE_decompose.exe
+	rm K_E.par
+	rm fname.tmp
+
+
+	sed -e "s/NNNN/$XI/g"  K_E.tmp > K_E.par
+	KE_decompose.exe
+	rm K_E.par
+	rm fname.tmp
+
+		
+	# --------------------------------------- Run
+
+
+	XRI=1		
+	XRJ=100
+	
+	while [ $XRI -le $XRJ ]
+	do
+
+	# --------------------------------------- Run FLAC
+		
+	
+	sed -e "s/NNNN/$XI/g"  	flac.tmp   > flac01.tmp
+	sed -e "s/MMMM/$XRI/g"  flac01.tmp > flac.ini
+	
+	file_dst=run_CCID_SUB.flc
+	file_dst=${file_dst/CCID/$XI}
+	file_dst=${file_dst/SUB/$XRI}
+	
+	sed -e "s/NNNN/$XI/g"  base_files/base_FLAC  > flc_bas.tmp
+	sed -e "s/MMMM/$XRI/g"          flc_bas.tmp  > flc_bas1.tmp
+	sed -e "s/SSSS/$((XI-1))/g"       flc_bas1.tmp > $file_dst
+	
+	flac600.exe
+	rm flac.ini
+	
+	
+		
+	# --------------------------------------- Produce Dynamic K
+		
+	
+	sed -e "s/NNNN/$XI/g"  	guide.tmp   > guide1.tmp
+	sed -e "s/MMMM/$XRI/g"  guide1.tmp  >  guide.par
+	
+	flc_to_str.exe
+	rm guide.par
+	
+	# --------------------------------------- Run STARS
+	
+	file_dst=run_CCID_SUB.dat
+	file_dst=${file_dst/CCID/$XI}
+	file_dst=${file_dst/SUB/$XRI}
+	
+	sed -e "s/NNNN/$XI/g"     base_files/base_STARS  > str_bas.tmp
+	sed -e "s/MMMM/$XRI/g"              str_bas.tmp  > str_bas1.tmp
+	sed -e "s/SSSS/$((XI-1))/g"           str_bas1.tmp > $file_dst
+	
+	st200911  -f $file_dst
+	
+	
+	# --------------------------------------- EXTRACT P and T for FLAC
+	
+	
+	sed -e "s/NNNN/$XI/g"       rep1.tmp   > rep2.tmp
+	sed -e "s/MMMM/$XRI/g"      rep2.tmp   > rep3.tmp
+	sed -e "s/TIME/$TM/g"       rep3.tmp   > report.inp
+	report.exe  -f report.inp /o tmp.tmp
+	rm report.inp
+	rm tmp.tmp
+	
+	sed -e "s/NNNN/$XI/g"         info_temp.tmp  > info_temp1.tmp
+	sed -e "s/MMMM/$XRI/g"        info_temp1.tmp  > info.par
+	st_to_flc.exe   
+	rm info.par
+	       
+	sed -e "s/NNNN/$XI/g"          info_pres.tmp  > info_pres1.tmp
+	sed -e "s/MMMM/$XRI/g"       info_pres1.tmp  > info.par
+	st_to_flc.exe   
+	rm info.par    
+		
+        # --------------------------------------- EXTRACT PRODUCTION DATA TO FILE
+	
+	
+	sed -e "s/NNNN/$XI/g"       rep_pro.tmp     > rep_pro1.tmp
+	sed -e "s/MMMM/$XRI/g"      rep_pro1.tmp    > rep_pro.inp
+	report.exe  -f rep_pro.inp /o tmp.tmp
+	rm rep_pro.inp
+	rm tmp.tmp
+	
+	sed -e "s/NNNN/$XI/g"        extract_pro.tmp  > extract_pro1.tmp
+	sed -e "s/MMMM/$XRI/g"       extract_pro1.tmp > extract.par
+	Produc_Extract.exe
+	rm extract.par
+
+
+	# --------------------------------------- EXTRACT INJECTION DATA TO FILE
+	
+	
+	sed -e "s/NNNN/$XI/g"       rep_inj.tmp     > rep_inj1.tmp
+	sed -e "s/MMMM/$XRI/g"      rep_inj1.tmp    > rep_inj.inp
+	report.exe  -f rep_inj.inp /o tmp.tmp
+	rm rep_inj.inp
+	rm tmp.tmp
+	
+	sed -e "s/NNNN/$XI/g"        extract_inj.tmp  > extract_inj1.tmp
+	sed -e "s/MMMM/$XRI/g"       extract_inj1.tmp > extract.par
+	Produc_Extract.exe
+	rm extract.par
+	
+	
+		
+	# --------------------------------------- 
+	 
+	XRI=$((XRI+1))
+     
+	done    
+    
+
+
+rm *.tmp
+
